@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="روضة — القرآن الكريم، التلاوة والتفسير، مواقيت الصلاة، الأذكار وأسماء الله الحسنى" />
+  <meta name="theme-color" content="#0f3d33" />
+  <title>روضة — القرآن والأذكار ومواقيت الصلاة</title>
+
+  <!-- الخطوط من Google Fonts:
+       IBM Plex Sans Arabic -> الواجهة والهيدر والأزرار والتواريخ
+       Aref Ruqaa           -> اسم روضة وعناوين الصفحات
+       Amiri                -> القرآن الكريم والأذكار والأحاديث -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- شريط التقدم أعلى الصفحة -->
+  <div id="progress" class="progress"></div>
+
+  <!-- ===== الهيدر الكبسولة العائم ===== -->
+  <header class="navbar">
+    <a href="#home" class="logo" data-page="home">
+      <span class="logo-star">۞</span>
+      <span>روضة</span>
+    </a>
+    <nav class="nav-links" aria-label="التنقل الرئيسي">
+      <a href="#home" data-page="home" class="active">الرئيسية</a>
+      <a href="#quran" data-page="quran">القرآن</a>
+      <a href="#prayer" data-page="prayer">المواقيت</a>
+      <a href="#adhkar" data-page="adhkar">الأذكار</a>
+      <a href="#names" data-page="names">الأسماء الحسنى</a>
+      <a href="#favorites" data-page="favorites">المفضلة</a>
+    </nav>
+    <div class="nav-actions">
+      <button id="themeBtn" class="theme-toggle" type="button" aria-label="تبديل الوضع الليلي والنهاري" aria-pressed="false" title="الوضع الليلي / النهاري">
+        <span class="theme-track">
+          <span class="theme-icon icon-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4" fill="currentColor" fill-opacity="0.25" />
+              <path d="M12 2v2.2M12 19.8V22M4.93 4.93l1.56 1.56M17.51 17.51l1.56 1.56M2 12h2.2M19.8 12H22M4.93 19.07l1.56-1.56M17.51 6.49l1.56-1.56" />
+            </svg>
+          </span>
+          <span class="theme-icon icon-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" fill="currentColor" fill-opacity="0.25" />
+              <path d="M17.5 4.5v2M16.5 5.5h2" stroke-width="1.8" />
+            </svg>
+          </span>
+          <span class="theme-thumb" aria-hidden="true"></span>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===================================================
+         الصفحة 1: الرئيسية (Home)
+         =================================================== -->
+    <section id="page-home" class="page active">
+      <!-- الهيرو (يظهر بالكامل في أول شاشة) -->
+      <div class="hero">
+        <svg class="hero-star" viewBox="0 0 200 200" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="45" y="45" width="110" height="110" />
+            <rect x="45" y="45" width="110" height="110" transform="rotate(45 100 100)" />
+            <circle cx="100" cy="100" r="40" />
+            <circle cx="100" cy="100" r="78" />
+          </g>
+        </svg>
+
+        <div class="hero-content">
+          <h1 class="hero-title">روضة</h1>
+          <p class="hero-hadith quran-text">
+            «مَا بَيْنَ بَيْتِي وَمِنْبَرِي رَوْضَةٌ مِنْ رِيَاضِ الْجَنَّةِ»
+            <span class="hadith-src">متفق عليه</span>
+          </p>
+          <p id="greeting" class="greeting"></p>
+          <p class="dates">
+            <span id="hijriDate"></span>
+            <span class="dot">✦</span>
+            <span id="gregDate"></span>
+          </p>
+          <a href="#prayer" class="next-chip" id="heroNext">الصلاة القادمة...</a>
+
+          <!-- لوحة آية اليوم وحديث اليوم بأسلوب الصفحتين -->
+          <div class="daily-spread">
+            <article class="daily-col daily-verse">
+              <header class="daily-kicker">
+                <span class="kicker-dot" aria-hidden="true"></span>
+                <span>آية اليوم</span>
+              </header>
+              <blockquote id="verseText" class="quran-text daily-quote"></blockquote>
+              <footer class="daily-meta">
+                <cite id="verseRef" class="daily-ref"></cite>
+                <button class="copy-link" data-copy="verse" type="button" aria-label="نسخ الآية">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  <span>نسخ</span>
+                </button>
+              </footer>
+            </article>
+
+            <div class="spread-divider" aria-hidden="true"><span>◆</span></div>
+
+            <article class="daily-col daily-hadith">
+              <header class="daily-kicker">
+                <span class="kicker-dot" aria-hidden="true"></span>
+                <span>حديث اليوم</span>
+              </header>
+              <blockquote id="hadithText" class="quran-text daily-quote"></blockquote>
+              <footer class="daily-meta">
+                <cite id="hadithRef" class="daily-ref"></cite>
+                <button class="copy-link" data-copy="hadith" type="button" aria-label="نسخ الحديث">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                  <span>نسخ</span>
+                </button>
+              </footer>
+            </article>
+          </div>
+        </div>
+
+        <a href="#home-explore" class="scroll-hint" aria-label="أقسام روضة">⌄</a>
+      </div>
+
+      <!-- محتوى الصفحة الرئيسية: بوابات الأقسام + شريط سريع -->
+      <div id="home-explore" class="home-body">
+        <div class="home-intro">
+          <span class="eyebrow">أقسام روضة</span>
+          <h2>اختر وردك اليومي</h2>
+          <p>كل قسم في صفحة مستقلة هادئة، خالية من التشتيت ومصممة للخشوع والتركيز</p>
+        </div>
+
+        <!-- شبكة البوابات التحريرية (٤ أقسام رئيسية) -->
+        <div class="portal-grid">
+          <a href="#quran" class="portal-card">
+            <div class="portal-top">
+              <span class="portal-idx">٠١</span>
+              <span class="portal-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3H11v17H4.5A2.5 2.5 0 0 0 2 22V5.5z" /><path d="M22 5.5A2.5 2.5 0 0 0 19.5 3H13v17h6.5a2.5 2.5 0 0 1 2.5 2V5.5z" /></svg>
+              </span>
+            </div>
+            <h3>القرآن الكريم</h3>
+            <p>المصحف العثماني كاملاً مع التفسير الميسّر وتلاوات ٨ من كبار القرّاء آية بآية.</p>
+            <div class="portal-foot">
+              <span class="portal-stat">١١٤ سورة</span>
+              <span class="portal-go">تصفّح ←</span>
+            </div>
+          </a>
+
+          <a href="#prayer" class="portal-card">
+            <div class="portal-top">
+              <span class="portal-idx">٠٢</span>
+              <span class="portal-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
+              </span>
+            </div>
+            <h3>مواقيت الصلاة</h3>
+            <p>مواقيت الصلوات الخمس بدقة حسب مدينتك مع عدّاد تنازلي حيّ للصلاة القادمة.</p>
+            <div class="portal-foot">
+              <span id="homePrayerStat" class="portal-stat">٥ صلوات</span>
+              <span class="portal-go">المواقيت ←</span>
+            </div>
+          </a>
+
+          <a href="#adhkar" class="portal-card">
+            <div class="portal-top">
+              <span class="portal-idx">٠٣</span>
+              <span class="portal-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8" stroke-dasharray="1.5 3.5" stroke-width="2.4" /><circle cx="12" cy="4" r="1.4" fill="currentColor" /></svg>
+              </span>
+            </div>
+            <h3>الأذكار والمسبحة</h3>
+            <p>أذكار الصباح والمساء بعدّاد تفاعلي ومؤشّر إنجاز، مع مسبحة إلكترونية بحلقة ٣٣.</p>
+            <div class="portal-foot">
+              <span id="homeTasbihStat" class="portal-stat">المسبحة: ٠</span>
+              <span class="portal-go">ابدأ الذكر ←</span>
+            </div>
+          </a>
+
+          <a href="#names" class="portal-card">
+            <div class="portal-top">
+              <span class="portal-idx">٠٤</span>
+              <span class="portal-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" /><rect x="6" y="6" width="12" height="12" transform="rotate(45 12 12)" /></svg>
+              </span>
+            </div>
+            <h3>أسماء الله الحسنى</h3>
+            <p>تأمّل في الأسماء التسعة والتسعين ومعانيها بالعربية في بطاقات تفاعلية قابلة للبحث.</p>
+            <div class="portal-foot">
+              <span class="portal-stat">٩٩ اسماً</span>
+              <span class="portal-go">استكشف ←</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- شريط المفضلة والورد السريع -->
+        <div class="home-strip">
+          <div class="strip-item">
+            <div>
+              <span class="eyebrow">سُوَرُك المحفوظة</span>
+              <h3 id="homeFavHeading">السور المفضلة</h3>
+              <p id="homeFavSub">احفظ السور التي تداوم على قراءتها للوصول السريع إليها في أي وقت.</p>
+            </div>
+            <a href="#favorites" class="btn-outline">افتح المفضلة ←</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         الصفحة 2: القرآن الكريم
+         =================================================== -->
+    <section id="page-quran" class="page">
+      <div class="page-banner">
+        <a href="#home" class="crumb">الرئيسية</a>
+        <h1>القرآن الكريم</h1>
+        <p>اقرأ بالرسم العثماني واستمع بتلاوة عذبة مع التفسير الميسّر</p>
+      </div>
+      <div class="section">
+        <!-- شريط متابعة آخر قراءة (يظهر تلقائياً عند وجود سورة مقروءة) -->
+        <div id="lastReadBar" class="last-read hidden"></div>
+
+        <!-- وصول سريع لأشهر السور -->
+        <div class="quick-surahs">
+          <span class="quick-label">وصول سريع</span>
+          <div class="quick-list" id="quickSurahs">
+            <button type="button" data-num="1">الفاتحة</button>
+            <button type="button" data-num="18">الكهف</button>
+            <button type="button" data-num="36">يس</button>
+            <button type="button" data-num="55">الرحمن</button>
+            <button type="button" data-num="56">الواقعة</button>
+            <button type="button" data-num="67">الملك</button>
+            <button type="button" data-num="2">البقرة</button>
+          </div>
+        </div>
+
+        <!-- شريط البحث والفلترة -->
+        <div class="quran-bar">
+          <div class="search-wrap">
+            <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+            <input id="searchInput" class="input" type="search" placeholder="ابحث باسم السورة أو برقمها..." />
+          </div>
+          <div class="chips" id="surahChips">
+            <button class="chip active" data-filter="all" type="button">الكل <em id="countAll">١١٤</em></button>
+            <button class="chip" data-filter="Meccan" type="button">مكية <em>٨٦</em></button>
+            <button class="chip" data-filter="Medinan" type="button">مدنية <em>٢٨</em></button>
+          </div>
+        </div>
+
+        <div id="surahStatus"></div>
+        <div id="surahGrid" class="grid"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         الصفحة 3: مواقيت الصلاة
+         =================================================== -->
+    <section id="page-prayer" class="page">
+      <div class="page-banner">
+        <a href="#home" class="crumb">الرئيسية</a>
+        <h1>مواقيت الصلاة</h1>
+        <p>اختر مدينتك وتابع الوقت المتبقي للصلاة القادمة بدقة</p>
+      </div>
+      <div class="section">
+        <select id="citySelect" class="input" aria-label="اختيار المدينة"></select>
+        <div class="countdown-box">
+          <span>الصلاة القادمة</span>
+          <strong id="nextName">--</strong>
+          <span id="countdown" class="countdown">--:--:--</span>
+        </div>
+        <div id="prayerStatus"></div>
+        <div id="prayerGrid" class="prayer-grid"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         الصفحة 4: الأذكار والمسبحة
+         =================================================== -->
+    <section id="page-adhkar" class="page">
+      <div class="page-banner">
+        <a href="#home" class="crumb">الرئيسية</a>
+        <h1>الأذكار والمسبحة</h1>
+        <p>أذكار الصباح والمساء مع عدّاد تفاعلي ومسبحة إلكترونية</p>
+      </div>
+      <div class="section">
+        <div class="tabs">
+          <button class="tab active" data-type="morning" type="button">أذكار الصباح</button>
+          <button class="tab" data-type="evening" type="button">أذكار المساء</button>
+        </div>
+        <div class="adhkar-progress glass">
+          <span id="adhkarProgressText"></span>
+          <div class="bar"><div id="adhkarBar"></div></div>
+        </div>
+        <div id="adhkarList" class="adhkar-list"></div>
+
+        <div class="tasbih glass">
+          <h3>المسبحة الإلكترونية</h3>
+          <button id="tasbihBtn" class="tasbih-btn" type="button" aria-label="تسبيح">
+            <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+              <circle cx="100" cy="100" r="90" class="ring-bg" />
+              <circle cx="100" cy="100" r="90" class="ring-fill" id="tasbihRing" />
+            </svg>
+            <span id="tasbihPhrase" class="tasbih-phrase quran-text"></span>
+            <span id="tasbihCount" class="tasbih-count">٠</span>
+          </button>
+          <p id="tasbihTotal" class="muted"></p>
+          <button id="tasbihReset" class="btn-outline" type="button">إعادة</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         الصفحة 5: أسماء الله الحسنى
+         =================================================== -->
+    <section id="page-names" class="page">
+      <div class="page-banner">
+        <a href="#home" class="crumb">الرئيسية</a>
+        <h1>أسماء الله الحسنى</h1>
+        <p>اضغط على أي اسم لمعرفة معناه، أو ابحث بالاسم أو المعنى</p>
+      </div>
+      <div class="section">
+        <input id="namesSearch" class="input" type="search" placeholder="ابحث عن اسم أو معنى..." />
+        <div id="namesGrid" class="names-grid"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         الصفحة 6: المفضلة
+         =================================================== -->
+    <section id="page-favorites" class="page">
+      <div class="page-banner">
+        <a href="#home" class="crumb">الرئيسية</a>
+        <h1>السور المفضلة</h1>
+        <p>السور التي حفظتها للوصول السريع والقراءة اليومية</p>
+      </div>
+      <div class="section">
+        <div id="favGrid" class="grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-wrap">
+      <!-- تعريف المشروع وروابط سريعة -->
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#home" class="footer-logo">روضة</a>
+          <p class="footer-tagline">رفيقك اليومي للقرآن الكريم، مواقيت الصلاة، الأذكار وأسماء الله الحسنى</p>
+        </div>
+        <nav class="footer-nav" aria-label="روابط التذييل">
+          <a href="#home">الرئيسية</a>
+          <a href="#quran">القرآن</a>
+          <a href="#prayer">المواقيت</a>
+          <a href="#adhkar">الأذكار</a>
+          <a href="#names">الأسماء الحسنى</a>
+          <a href="#favorites">المفضلة</a>
+        </nav>
+      </div>
+
+      <!-- فريق العمل -->
+      <div class="footer-team">
+        <div class="team-head">
+          <span class="kicker-dot" aria-hidden="true"></span>
+          <span>فريق العمل</span>
+          <span class="team-line" aria-hidden="true"></span>
+        </div>
+        <ul class="team-grid">
+          <li class="team-card">
+            <span class="team-num">٠١</span>
+            <div>
+              <strong>محمد هاني محمد صبري</strong>
+              <small>علوم الحاسب</small>
+            </div>
+          </li>
+          <li class="team-card">
+            <span class="team-num">٠٢</span>
+            <div>
+              <strong>شيماء عادل عبده حسانين غريب</strong>
+              <small>كيمياء وحاسب</small>
+            </div>
+          </li>
+          <li class="team-card">
+            <span class="team-num">٠٣</span>
+            <div>
+              <strong>هبه عبدالله صابر محمد</strong>
+              <small>كيمياء وحاسب</small>
+            </div>
+          </li>
+          <li class="team-card">
+            <span class="team-num">٠٤</span>
+            <div>
+              <strong>عبدالرحمن محمد عبدالباسط محمد</strong>
+              <small>علوم الحاسب</small>
+            </div>
+          </li>
+          <li class="team-card">
+            <span class="team-num">٠٥</span>
+            <div>
+              <strong>محمود محمد السيد ابراهيم عاشور</strong>
+              <small>علوم الحاسب</small>
+            </div>
+          </li>
+          <li class="team-card">
+            <span class="team-num">٠٦</span>
+            <div>
+              <strong>احمد عبد الكريم محمد</strong>
+              <small>علوم الحاسب</small>
+            </div>
+          </li>
+          <li class="team-card">
+            <span class="team-num">٠٧</span>
+            <div>
+              <strong>سهام علي زكريا علي</strong>
+              <small>فيزياء وحاسب</small>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- الشريط السفلي -->
+      <div class="footer-bottom">
+        <p>اللهم اجعل هذا العمل خالصاً لوجهك الكريم وفي ميزان حسناتنا</p>
+        <span>روضة · ٢٠٢٦</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== قارئ المصحف الشريف (القراءة + التفسير + مشغّل التلاوة) ===== -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-title-group">
+          <h3 id="modalTitle"></h3>
+          <small id="modalMeta"></small>
+        </div>
+        <div class="modal-head-actions">
+          <button id="modalFavBtn" class="icon-btn" type="button" title="حفظ في المفضلة" aria-label="حفظ في المفضلة">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z" /></svg>
+          </button>
+          <button id="modalClose" class="icon-btn" type="button" aria-label="إغلاق">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- أدوات القراءة: وضع العرض وحجم الخط -->
+      <div class="modal-tools">
+        <div class="seg" id="viewSeg">
+          <button data-view="mushaf" type="button">المصحف</button>
+          <button data-view="tafsir" type="button">التفسير الميسّر</button>
+        </div>
+        <div class="font-ctrl" aria-label="حجم الخط">
+          <button id="fontDec" type="button" title="تصغير الخط">أ-</button>
+          <span id="fontLabel">متوسط</span>
+          <button id="fontInc" type="button" title="تكبير الخط">أ+</button>
+        </div>
+      </div>
+
+      <!-- صفحة المصحف -->
+      <div id="modalBody" class="modal-body"></div>
+
+      <!-- مشغّل التلاوة المثبت أسفل القارئ -->
+      <div class="audio-dock">
+        <div class="audio-controls">
+          <button id="prevAyahBtn" class="dock-btn" type="button" title="الآية السابقة" aria-label="الآية السابقة">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6h2v12H8zm3.5 6 8.5 6V6z" /></svg>
+          </button>
+          <button id="playBtn" class="play-btn" type="button" aria-label="تشغيل التلاوة">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+          </button>
+          <button id="nextAyahBtn" class="dock-btn" type="button" title="الآية التالية" aria-label="الآية التالية">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 6h2v12h-2zM4 18l8.5-6L4 6z" /></svg>
+          </button>
+          <button id="repeatBtn" class="dock-btn" type="button" title="تكرار الآية" aria-label="تكرار الآية" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
+          </button>
+        </div>
+        <span id="audioStatus" class="audio-status">اضغط على أي آية للاستماع</span>
+        <select id="reciterSelect" class="input small" aria-label="اختيار القارئ"></select>
+      </div>
+    </div>
+  </div>
+
+  <button id="toTop" class="to-top" type="button" aria-label="العودة للأعلى">↑</button>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
