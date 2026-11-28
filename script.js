@@ -1,15 +1,25 @@
 /* =========================================================
-   روضة - script.js
-   جافاسكربت خالص بدون مكتبات (بالعربية فقط). الأقسام:
-   1) البيانات   2) الحالة والدوال المساعدة   3) الوضع الليلي
-   4) الواجهة الرئيسية   5) القرآن والتلاوة والتفسير   6) المفضلة
-   7) مواقيت الصلاة   8) الأذكار والمسبحة   9) أسماء الله الحسنى
-   10) تأثيرات الصفحة   11) تشغيل التطبيق
+   روضة — script.js
+   كل منطق الموقع مكتوب بـ JavaScript صافي بدون أي مكتبات خارجية.
+   تم تقسيم الكود إلى ١٢ قسماً منظماً مع شرح بسيط فوق كل جزء:
+
+   1)  البيانات الثابتة (الآيات، الأحاديث، القُرّاء، المدن، الأذكار، أسماء الله)
+   2)  حالة التطبيق والدوال المساعدة
+   3)  الوضع الليلي والنهاري
+   4)  الصفحة الرئيسية (التحية، التاريخ، آية وحديث اليوم)
+   5)  القرآن الكريم (قائمة السور، البحث، قارئ المصحف، التلاوة الصوتية)
+   6)  السور المفضلة
+   7)  مواقيت الصلاة والعدّاد التنازلي
+   8)  الأذكار والمسبحة الإلكترونية
+   9)  أسماء الله الحسنى
+   10) نظام التنقل بين الصفحات (Hash Router)
+   11) تثبيت التطبيق على الموبايل (PWA & Service Worker)
+   12) نقطة البداية (تشغيل التطبيق وربط الأزرار)
    ========================================================= */
 
-/* ================= 1) البيانات ================= */
+/* ================= 1) البيانات الثابتة ================= */
 
-// آيات اليوم (تتغير تلقائياً كل يوم)
+// مصفوفة آيات اليوم (تتغير تلقائياً كل يوم)
 const VERSES = [
   { text: "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ", ref: "سورة الرعد: ٢٨" },
   { text: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ الْعُسْرِ يُسْرًا", ref: "سورة الشرح: ٥-٦" },
@@ -21,7 +31,7 @@ const VERSES = [
   { text: "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ", ref: "سورة البقرة: ١٥٣" }
 ];
 
-// أحاديث اليوم (صحيحة ومختصرة)
+// مصفوفة أحاديث اليوم (أحاديث صحيحة ومختصرة)
 const HADITHS = [
   { text: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى", ref: "متفق عليه" },
   { text: "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ", ref: "متفق عليه" },
@@ -35,7 +45,7 @@ const HADITHS = [
   { text: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ", ref: "رواه مسلم" }
 ];
 
-// القرّاء المتاحون للتلاوة الصوتية
+// قائمة القرّاء للتلاوة الصوتية (كل قارئ له معرّف وجودة صوت في Islamic Network CDN)
 const RECITERS = [
   { id: "ar.alafasy", bitrate: 128, name: "مشاري العفاسي" },
   { id: "ar.abdulbasitmurattal", bitrate: 192, name: "عبد الباسط عبد الصمد" },
@@ -47,7 +57,8 @@ const RECITERS = [
   { id: "ar.ahmedajamy", bitrate: 128, name: "أحمد العجمي" }
 ];
 
-// المدن المتاحة لمواقيت الصلاة (مكة والمدينة بطريقة أم القرى = 4)
+// المدن المتاحة في صفحة مواقيت الصلاة:
+// method = 5 تعني الهيئة المصرية العامة للمساحة، و method = 4 تعني تقويم أم القرى
 const CITIES = [
   { city: "Zagazig", country: "Egypt", method: 5, name: "الزقازيق" },
   { city: "Cairo", country: "Egypt", method: 5, name: "القاهرة" },
@@ -61,6 +72,7 @@ const CITIES = [
   { city: "Medina", country: "Saudi Arabia", method: 4, name: "المدينة المنورة" }
 ];
 
+// الصلوات الخمس مع أيقونة SVG لكل صلاة
 const PRAYERS = [
   { key: "Fajr", name: "الفجر", icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v3M5 12h2M17 12h2M7.2 7.2l1.4 1.4M16.8 7.2l-1.4 1.4M7 16a5 5 0 0 1 10 0M3 19h18"/></svg>' },
   { key: "Dhuhr", name: "الظهر", icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>' },
@@ -69,9 +81,11 @@ const PRAYERS = [
   { key: "Isha", name: "العشاء", icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/><path d="M17.5 5v2M16.5 6h2"/></svg>' }
 ];
 const PRAYER_NAMES = Object.fromEntries(PRAYERS.map((p) => [p.key, p.name]));
+
+// أذكار المسبحة التي تتبدل تلقائياً كل ٣٣ تسبيحة
 const TASBIH_PHRASES = ["سُبْحَانَ اللَّهِ", "الْحَمْدُ لِلَّهِ", "اللَّهُ أَكْبَرُ"];
 
-// الأذكار المشتركة بين الصباح والمساء
+// الأذكار المشتركة بين الصباح والمساء (لتجنب تكرارها مرتين في الكود)
 const COMMON_ADHKAR = [
   { text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ (آية الكرسي)", count: 1 },
   { text: "قراءة سورة الإخلاص، وسورة الفلق، وسورة الناس", count: 3 },
@@ -86,6 +100,7 @@ const COMMON_ADHKAR = [
   { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", count: 100 }
 ];
 
+// أذكار الصباح (١٤ ذكراً) وأذكار المساء (١٤ ذكراً)
 const ADHKAR = {
   morning: [
     { text: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ", count: 1 },
@@ -101,7 +116,7 @@ const ADHKAR = {
   ]
 };
 
-// أسماء الله الحسنى التسعة والتسعون ومعانيها بالعربية
+// أسماء الله الحسنى التسعة والتسعون ومعانيها بالعربية: [الاسم، المعنى]
 const NAMES_OF_ALLAH = [
   ["الرَّحْمَنُ", "واسع الرحمة بجميع خلقه في الدنيا"],
   ["الرَّحِيمُ", "ذو الرحمة الخاصة بالمؤمنين في الآخرة"],
@@ -204,31 +219,40 @@ const NAMES_OF_ALLAH = [
   ["الصَّبُورُ", "الذي لا يعاجل بالعقوبة ويحلم على عباده"]
 ];
 
-/* ================= 2) الحالة والدوال المساعدة ================= */
+/* ================= 2) حالة التطبيق والدوال المساعدة ================= */
 
+// دالة مختصرة للوصول لأي عنصر في الصفحة عن طريق الـ id
 const $ = (id) => document.getElementById(id);
 
+// قراءة البيانات المحفوظة في المتصفح (localStorage) بأمان
 function load(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
   catch { return fallback; }
 }
+// حفظ أي قيمة في المتصفح لتبقى موجودة حتى بعد إغلاق الصفحة
 function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 
-let favorites = load("rawda-favs", []);
-let tasbihCount = load("rawda-tasbih", 0);
-let viewMode = load("rawda-view", "mushaf"); // mushaf | tafsir
+// المتغيرات التي تحفظ حالة التطبيق أثناء الاستخدام
+let favorites = load("rawda-favs", []);      // السور المفضلة
+let tasbihCount = load("rawda-tasbih", 0);   // عداد المسبحة
+let viewMode = load("rawda-view", "mushaf"); // وضع القراءة: mushaf أو tafsir
 if (viewMode !== "mushaf" && viewMode !== "tafsir") viewMode = "mushaf";
-let fontStep = load("rawda-font", 2);        // 0..4 حجم خط المصحف
-let lastRead = load("rawda-last", null);     // آخر سورة تم فتحها
-let repeatAyah = false;
-let surahs = [];
-let surahFilter = "all"; // all | Meccan | Medinan
-let timings = null, timezone = null, lastNextPrayer = null;
-let adhkarType = "morning", adhkarLeft = [];
-let currentSurah = null;
-let playingIndex = null;
-const audio = new Audio();
+let fontStep = load("rawda-font", 2);        // درجة حجم خط المصحف (0 إلى 4)
+let lastRead = load("rawda-last", null);     // آخر سورة قرأها المستخدم
+let repeatAyah = false;                      // هل تكرار الآية مفعّل؟
+let surahs = [];                             // قائمة الـ ١١٤ سورة بعد جلبها من الـ API
+let surahFilter = "all";                     // الفلتر الحالي: all أو Meccan أو Medinan
+let timings = null;                          // مواقيت الصلاة لليوم
+let timezone = null;                         // المنطقة الزمنية للمدينة المختارة
+let lastNextPrayer = null;                   // آخر صلاة قادمة (لتحديث التظليل عند تغيرها)
+let adhkarType = "morning";                  // أذكار الصباح أم المساء
+let adhkarLeft = [];                         // العدد المتبقي لكل ذكر
+let currentSurah = null;                     // بيانات السورة المفتوحة حالياً في القارئ
+let playingIndex = null;                     // رقم الآية التي تُتلى حالياً
+let deferredInstallPrompt = null;            // حدث تثبيت التطبيق على الموبايل (PWA)
+const audio = new Audio();                   // كائن الصوت المدمج في المتصفح لتشغيل التلاوة
 
+// درجات حجم الخط في قارئ المصحف
 const FONT_STEPS = [
   { size: "1.3rem", label: "صغير جداً" },
   { size: "1.5rem", label: "صغير" },
@@ -236,17 +260,23 @@ const FONT_STEPS = [
   { size: "1.95rem", label: "كبير" },
   { size: "2.25rem", label: "كبير جداً" }
 ];
+
+// أيقونات SVG صغيرة متكررة في الكود
 const PLAY_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
 const EMBLEM_SVG = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="10" y="10" width="28" height="28" rx="3" fill="currentColor" fill-opacity="0.08"/><rect x="10" y="10" width="28" height="28" rx="3" transform="rotate(45 24 24)" fill="currentColor" fill-opacity="0.08"/></svg>';
 const BOOKMARK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg>';
 
+// تحويل الأرقام الإنجليزية (123) إلى عربية (١٢٣)
 const toArabicDigits = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
+// تشغيل اهتزاز خفيف على الموبايل إذا كان الجهاز يدعمه
 const vibrate = (pattern) => navigator.vibrate && navigator.vibrate(pattern);
+// إرجاع رقم ثابت طوال اليوم ويتغير مع كل يوم جديد (لاختيار آية وحديث اليوم)
 const dayIndex = (length) => Math.floor(Date.now() / 86400000) % length;
+// ترجمة نوع نزول السورة للعربية
 const revLabel = (type) => (type === "Meccan" ? "مكية" : "مدنية");
 
-// إزالة التشكيل وتوحيد الحروف لتسهيل البحث العربي
+// تنظيف النص العربي من التشكيل وتوحيد الهمزات حتى يعمل البحث بسهولة
 function normalize(text) {
   return String(text).toLowerCase()
     .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "")
@@ -254,13 +284,16 @@ function normalize(text) {
     .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 }
 
+// عرض دائرة التحميل داخل أي عنصر
 function showSpinner(el) { el.innerHTML = '<div class="spinner"></div>'; }
 
+// عرض رسالة خطأ مع زر «إعادة المحاولة» لو فشل الاتصال بالإنترنت
 function showError(el, retryFn) {
   el.innerHTML = '<div class="error"><p>تعذّر تحميل البيانات. تأكد من اتصالك بالإنترنت.</p><button class="btn-outline" type="button">إعادة المحاولة</button></div>';
   el.querySelector("button").addEventListener("click", retryFn);
 }
 
+// إظهار إشعار سريع أسفل الشاشة يختفي بعد ثانيتين
 function toast(message) {
   const el = $("toast");
   el.textContent = message;
@@ -269,6 +302,7 @@ function toast(message) {
   toast.timer = setTimeout(() => el.classList.remove("show"), 2000);
 }
 
+// دالة عامة لجلب البيانات بصيغة JSON من أي API والتحقق من نجاح الطلب
 async function getJSON(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error("HTTP " + res.status);
@@ -279,14 +313,16 @@ async function getJSON(url) {
 
 /* ================= 3) الوضع الليلي والنهاري ================= */
 
+// تبديل الوضع الليلي وحفظ اختيار المستخدم
 function setTheme(dark) {
   document.body.classList.toggle("dark", dark);
   $("themeBtn").setAttribute("aria-pressed", String(dark));
   save("rawda-theme", dark ? "dark" : "light");
 }
 
-/* ================= 4) الواجهة الرئيسية ================= */
+/* ================= 4) الصفحة الرئيسية (الهيرو) ================= */
 
+// عرض التحية حسب الوقت + التاريخ الهجري والميلادي + آية وحديث اليوم
 function renderHero() {
   const now = new Date();
   $("greeting").textContent = `السلام عليكم — ${now.getHours() < 12 ? "صباح الخير" : "مساء الخير"}`;
@@ -308,13 +344,15 @@ function renderHero() {
   $("hadithRef").textContent = hadith.ref;
 }
 
+// نسخ آية اليوم أو حديث اليوم إلى الحافظة
 function copyDaily(prefix) {
   const text = `${$(prefix + "Text").textContent}\n— ${$(prefix + "Ref").textContent}`;
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast("تم النسخ ✓")).catch(() => {});
 }
 
-/* ================= 5) القرآن الكريم ================= */
+/* ================= 5) القرآن الكريم وقارئ المصحف ================= */
 
+// جلب قائمة الـ ١١٤ سورة من موقع AlQuran Cloud API
 async function loadSurahs() {
   showSpinner($("surahStatus"));
   try {
@@ -326,11 +364,13 @@ async function loadSurahs() {
   }
 }
 
+// حذف كلمة «سورة» من الاسم القادم من الـ API لعرضه بشكل مرتب
 function cleanName(name) {
   const words = name.split(" ");
   return normalize(words[0]) === "سوره" ? words.slice(1).join(" ") : name;
 }
 
+// بناء كود HTML لبطاقة سورة واحدة
 function surahCard(s, i) {
   const isFav = favorites.some((f) => f.number === s.number);
   return `
@@ -347,7 +387,7 @@ function surahCard(s, i) {
     </div>`;
 }
 
-// عرض شريط متابعة آخر قراءة في صفحة القرآن
+// عرض شريط «متابعة آخر قراءة» في أعلى صفحة القرآن
 function renderLastRead() {
   const bar = $("lastReadBar");
   if (!lastRead) return bar.classList.add("hidden");
@@ -366,6 +406,7 @@ function renderLastRead() {
     <button class="last-read-btn" type="button" data-open="${lastRead.number}">أكمل القراءة ←</button>`;
 }
 
+// تطبيق حجم الخط المختار داخل نافذة المصحف وحفظه
 function applyFontStep() {
   fontStep = Math.max(0, Math.min(FONT_STEPS.length - 1, fontStep));
   const f = FONT_STEPS[fontStep];
@@ -374,12 +415,14 @@ function applyFontStep() {
   save("rawda-font", fontStep);
 }
 
+// تحديث شكل زر المفضلة داخل نافذة المصحف
 function updateModalFav() {
   if (!currentSurah) return;
   const isFav = favorites.some((f) => f.number === currentSurah.number);
   $("modalFavBtn").classList.toggle("saved", isFav);
 }
 
+// البحث الفوري في السور وتطبيق فلتر مكية / مدنية
 function filterSurahs() {
   const q = normalize($("searchInput").value.trim());
   const list = surahs.filter((s) =>
@@ -389,13 +432,14 @@ function filterSurahs() {
   $("surahGrid").innerHTML = list.length ? list.map(surahCard).join("") : '<p class="message">لا توجد نتائج مطابقة</p>';
 }
 
+// تغيير فلتر السور (الكل / مكية / مدنية)
 function setSurahFilter(filter) {
   surahFilter = filter;
   document.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c.dataset.filter === filter));
   filterSurahs();
 }
 
-// فتح السورة وتحميل النص العثماني والتفسير الميسّر في طلب واحد
+// فتح قارئ المصحف وجلب النص العثماني + التفسير الميسّر في طلب واحد
 async function openSurah(number) {
   stopAudio();
   const info = surahs.find((s) => s.number === number) || favorites.find((f) => f.number === number);
@@ -412,11 +456,13 @@ async function openSurah(number) {
     const [quran, tafsir] = await getJSON(
       `https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,ar.muyassar`
     );
+    // إذا فتح المستخدم سورة أخرى قبل انتهاء التحميل نتجاهل النتيجة القديمة
     if (openSurah.requested !== number) return;
 
     let basmala = "";
     const ayahs = quran.ayahs.map((a, i) => {
       let text = a.text.replace(/\uFEFF/g, "").trim();
+      // الـ API يدمج البسملة داخل الآية الأولى (ما عدا الفاتحة والتوبة)، فنفصلها كعنوان مستقل
       if (i === 0 && number !== 1 && number !== 9 && normalize(text).startsWith("بسم")) {
         const words = text.split(/\s+/);
         basmala = words.slice(0, 4).join(" ");
@@ -426,15 +472,11 @@ async function openSurah(number) {
     });
 
     currentSurah = {
-      number,
-      name: quran.name,
-      revelationType: quran.revelationType,
-      numberOfAyahs: quran.numberOfAyahs,
-      basmala,
-      ayahs
+      number, name: quran.name, revelationType: quran.revelationType,
+      numberOfAyahs: quran.numberOfAyahs, basmala, ayahs
     };
 
-    // حفظ آخر سورة مقروءة
+    // حفظ السورة كآخر قراءة
     lastRead = { number, name: quran.name, revelationType: quran.revelationType, numberOfAyahs: quran.numberOfAyahs };
     save("rawda-last", lastRead);
     renderLastRead();
@@ -448,6 +490,7 @@ async function openSurah(number) {
   }
 }
 
+// رسم الآيات داخل القارئ حسب الوضع المختار (المصحف أو التفسير الميسّر)
 function renderAyahs() {
   if (!currentSurah) return;
   document.querySelectorAll("#viewSeg button").forEach((b) => b.classList.toggle("active", b.dataset.view === viewMode));
@@ -493,12 +536,14 @@ function renderAyahs() {
   if (playingIndex !== null) highlightAyah(playingIndex, false);
 }
 
+// التبديل بين وضع المصحف ووضع التفسير
 function setViewMode(mode) {
   viewMode = mode;
   save("rawda-view", mode);
   renderAyahs();
 }
 
+// إغلاق نافذة المصحف وإيقاف الصوت
 function closeModal() {
   stopAudio();
   openSurah.requested = null;
@@ -509,11 +554,13 @@ function closeModal() {
 
 /* ---------- التلاوة الصوتية آية بآية ---------- */
 
+// تكوين رابط ملف الصوت MP3 لآية معينة حسب القارئ المختار
 function audioUrl(globalNumber) {
   const r = RECITERS[$("reciterSelect").value] || RECITERS[0];
   return `https://cdn.islamic.network/quran/audio/${r.bitrate}/${r.id}/${globalNumber}.mp3`;
 }
 
+// تشغيل الآية رقم i (-1 يعني البسملة)
 function playAyah(i) {
   if (!currentSurah || i < (currentSurah.basmala ? -1 : 0) || i >= currentSurah.ayahs.length) return stopAudio();
   playingIndex = i;
@@ -525,6 +572,7 @@ function playAyah(i) {
     : `الآية ${toArabicDigits(currentSurah.ayahs[i].numberInSurah)} من ${toArabicDigits(currentSurah.ayahs.length)}`;
 }
 
+// تظليل الآية التي تُتلى حالياً والتمرير إليها تلقائياً
 function highlightAyah(i, scroll) {
   document.querySelectorAll("#modalBody .playing").forEach((el) => el.classList.remove("playing"));
   const el = document.querySelector(`#modalBody .ayah[data-i="${i}"]`);
@@ -533,6 +581,7 @@ function highlightAyah(i, scroll) {
   if (scroll) el.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+// زر تشغيل / إيقاف مؤقت
 function togglePlay() {
   if (!currentSurah) return;
   if (playingIndex === null) playAyah(currentSurah.basmala ? -1 : 0);
@@ -540,6 +589,7 @@ function togglePlay() {
   else audio.pause();
 }
 
+// إيقاف التلاوة بالكامل وإعادة تعيين المشغّل
 function stopAudio() {
   playingIndex = null;
   audio.pause();
@@ -549,11 +599,13 @@ function stopAudio() {
   updatePlayBtn();
 }
 
+// تحديث أيقونة زر التشغيل (▶ أو ❚❚)
 function updatePlayBtn() {
   const playing = playingIndex !== null && !audio.paused;
   $("playBtn").innerHTML = playing ? PAUSE_ICON : PLAY_ICON;
 }
 
+// التعامل مع الضغط داخل القارئ (آية للاستماع، نسخ آية، أو الانتقال للسورة السابقة/التالية)
 function handleAyahClick(e) {
   const navBtn = e.target.closest("[data-surah]");
   if (navBtn && !navBtn.disabled) return openSurah(Number(navBtn.dataset.surah));
@@ -574,8 +626,9 @@ function handleAyahClick(e) {
   if (ayah && currentSurah) playAyah(Number(ayah.dataset.i));
 }
 
-/* ================= 6) المفضلة ================= */
+/* ================= 6) السور المفضلة ================= */
 
+// إضافة أو حذف سورة من المفضلة وحفظها في localStorage
 function toggleFavorite(number) {
   if (favorites.some((f) => f.number === number)) {
     favorites = favorites.filter((f) => f.number !== number);
@@ -584,7 +637,7 @@ function toggleFavorite(number) {
     const s = surahs.find((x) => x.number === number);
     if (!s) return;
     favorites.push(s);
-    toast("أُضيفت للمفضلة ★");
+    toast("أُضيفت للمفضلة ✓");
   }
   favorites.sort((a, b) => a.number - b.number);
   save("rawda-favs", favorites);
@@ -593,12 +646,12 @@ function toggleFavorite(number) {
   updateModalFav();
 }
 
+// عرض السور المفضلة في صفحة المفضلة وتحديث ملخصها في الصفحة الرئيسية
 function renderFavorites() {
   $("favGrid").innerHTML = favorites.length
     ? favorites.map(surahCard).join("")
-    : '<p class="message">لم تُضف أي سورة بعد. اضغط ☆ على أي سورة في صفحة القرآن لحفظها هنا.</p>';
+    : '<p class="message">لم تُضف أي سورة بعد. اضغط على أيقونة الحفظ في صفحة القرآن لإضافتها هنا.</p>';
 
-  // تحديث ملخص المفضلة في الصفحة الرئيسية
   const count = favorites.length;
   $("homeFavHeading").textContent = count
     ? `لديك ${toArabicDigits(count)} ${count === 1 ? "سورة محفوظة" : "سور محفوظة"}`
@@ -608,6 +661,7 @@ function renderFavorites() {
     : "احفظ السور التي تداوم على قراءتها للوصول السريع إليها في أي وقت.";
 }
 
+// معالج موحد للضغط على بطاقات السور (أيقونة الحفظ = مفضلة، البطاقة = فتح القارئ)
 function handleGridClick(e) {
   const star = e.target.closest(".bookmark");
   const card = e.target.closest(".surah-card");
@@ -615,8 +669,9 @@ function handleGridClick(e) {
   else if (card) openSurah(Number(card.dataset.num));
 }
 
-/* ================= 7) مواقيت الصلاة ================= */
+/* ================= 7) مواقيت الصلاة والعدّاد ================= */
 
+// تعبئة قائمتي المدن والقرّاء واستعادة آخر اختيار محفوظ
 function fillSelects() {
   const city = load("rawda-city", "0");
   $("citySelect").innerHTML = CITIES.map((c, i) => `<option value="${i}">${c.name}</option>`).join("");
@@ -627,6 +682,7 @@ function fillSelects() {
   $("reciterSelect").value = RECITERS[reciter] ? reciter : "0";
 }
 
+// جلب مواقيت الصلاة لليوم من AlAdhan API حسب المدينة المختارة
 async function loadPrayerTimes() {
   const c = CITIES[$("citySelect").value];
   save("rawda-city", $("citySelect").value);
@@ -646,16 +702,19 @@ async function loadPrayerTimes() {
   }
 }
 
+// تحويل وقت بصيغة "04:45" إلى ثوانٍ منذ منتصف الليل لتسهيل الطرح والمقارنة
 function toSeconds(time) {
   const [h, m] = time.split(" ")[0].split(":").map(Number);
   return h * 3600 + m * 60;
 }
 
+// تحويل الوقت من نظام ٢٤ ساعة إلى ١٢ ساعة بالعربية (مثل ٤:٥٧ ص)
 function format12(time) {
   const [h, m] = time.split(" ")[0].split(":").map(Number);
   return `${toArabicDigits(h % 12 || 12)}:${toArabicDigits(String(m).padStart(2, "0"))} ${h < 12 ? "ص" : "م"}`;
 }
 
+// حساب الوقت الحالي بالثواني حسب المنطقة الزمنية للمدينة المختارة (مثل مكة أو القاهرة)
 function nowSeconds() {
   try {
     const parts = new Intl.DateTimeFormat("en-GB", {
@@ -669,6 +728,7 @@ function nowSeconds() {
   }
 }
 
+// تحديد الصلاة القادمة وكم ثانية متبقية لها (بعد العشاء تكون الصلاة القادمة فجر الغد)
 function getNextPrayer() {
   const now = nowSeconds();
   for (const p of PRAYERS) {
@@ -678,6 +738,7 @@ function getNextPrayer() {
   return { key: "Fajr", left: toSeconds(timings.Fajr) + 86400 - now };
 }
 
+// رسم بطاقات الصلوات الخمس وتمييز الصلاة القادمة بإطار ذهبي
 function renderPrayers() {
   if (!timings) return;
   const next = getNextPrayer().key;
@@ -689,6 +750,7 @@ function renderPrayers() {
     </div>`).join("");
 }
 
+// دالة تعمل كل ثانية لتحديث العدّاد التنازلي في صفحة المواقيت والصفحة الرئيسية
 function updateCountdown() {
   if (!timings) return;
   const { key, left } = getNextPrayer();
@@ -705,8 +767,9 @@ function updateCountdown() {
   }
 }
 
-/* ================= 8) الأذكار والمسبحة ================= */
+/* ================= 8) الأذكار والمسبحة الإلكترونية ================= */
 
+// التبديل بين أذكار الصباح والمساء وتجهيز عدّاداتها
 function setAdhkarType(type) {
   adhkarType = type;
   adhkarLeft = ADHKAR[type].map((d) => d.count);
@@ -714,6 +777,7 @@ function setAdhkarType(type) {
   renderAdhkar();
 }
 
+// رسم بطاقات الأذكار وتحديث شريط الإنجاز
 function renderAdhkar() {
   const list = ADHKAR[adhkarType];
   $("adhkarList").innerHTML = list.map((d, i) => `
@@ -731,6 +795,7 @@ function renderAdhkar() {
   $("adhkarBar").style.width = `${(done / list.length) * 100}%`;
 }
 
+// عند الضغط على بطاقة ذكر ينقص العداد ١، وعند الضغط على «إعادة» يرجع للعدد الأصلي
 function handleDhikrClick(e) {
   const card = e.target.closest(".dhikr-card");
   if (!card) return;
@@ -744,12 +809,14 @@ function handleDhikrClick(e) {
   renderAdhkar();
 }
 
+// الضغط على المسبحة: يزيد العداد ويهز الموبايل (اهتزاز أطول كل ٣٣)
 function tasbihTap() {
   tasbihCount++;
   vibrate(tasbihCount % 33 === 0 ? [120, 60, 120] : 30);
   updateTasbih();
 }
 
+// تحديث رقم المسبحة والحلقة الدائرية والذكر الظاهر فيها وحفظ الإجمالي
 function updateTasbih() {
   const round = tasbihCount % 33;
   $("tasbihCount").textContent = toArabicDigits(round);
@@ -763,6 +830,7 @@ function updateTasbih() {
 
 /* ================= 9) أسماء الله الحسنى ================= */
 
+// عرض وبحث الـ ٩٩ اسماً ومعانيها العربية في بطاقات قابلة للقلب
 function renderNames() {
   const q = normalize($("namesSearch").value.trim());
   const list = NAMES_OF_ALLAH
@@ -778,7 +846,7 @@ function renderNames() {
     </div>`).join("") : '<p class="message">لا توجد نتائج مطابقة</p>';
 }
 
-/* ================= 10) نظام الصفحات والتمرير ================= */
+/* ================= 10) نظام التنقل بين الصفحات ================= */
 
 const PAGES = ["home", "quran", "prayer", "adhkar", "names", "favorites"];
 const PAGE_TITLES = {
@@ -790,10 +858,10 @@ const PAGE_TITLES = {
   favorites: "السور المفضلة — روضة"
 };
 
-// التبديل بين الصفحات عبر رابط الهاش (#quran, #prayer, ...)
+// إظهار الصفحة المطلوبة حسب رابط الهاش (#quran, #prayer, ...) وإخفاء الباقي
 function showPage(rawHash) {
   const hash = (rawHash || location.hash || "#home").replace(/^#/, "");
-  if (hash === "home-explore") return; // تمرير داخلي في الرئيسية فقط
+  if (hash === "home-explore") return; // تمرير داخلي داخل الرئيسية فقط
   const page = PAGES.includes(hash) ? hash : "home";
 
   document.querySelectorAll(".page").forEach((el) => el.classList.toggle("active", el.id === "page-" + page));
@@ -803,19 +871,90 @@ function showPage(rawHash) {
   onScroll();
 }
 
+// تحديث شريط التقدم أعلى الشاشة وزر العودة للأعلى أثناء التمرير
 function onScroll() {
   const max = document.documentElement.scrollHeight - innerHeight;
   $("progress").style.width = `${max > 0 ? (scrollY / max) * 100 : 0}%`;
   $("toTop").classList.toggle("show", scrollY > 400);
 }
 
-/* ================= 11) تشغيل التطبيق ================= */
+/* ================= 11) تثبيت التطبيق على الموبايل (PWA) ================= */
+
+// تسجيل ملف Service Worker (sw.js) لتمكين التثبيت والعمل السريع بدون إنترنت
+function registerPWA() {
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+}
+
+// تحديث نص أزرار التثبيت عند تثبيت التطبيق بالفعل
+function markInstalled() {
+  document.querySelectorAll("[data-install]").forEach((btn) => {
+    btn.classList.add("installed");
+    const label = btn.querySelector(".install-text");
+    if (label) label.textContent = "مثبّت على جهازك ✓";
+  });
+}
+
+// تهيئة زر التثبيت (يدعم أندرويد وكمبيوتر عبر النافذة الأصلية + إرشادات الآيفون)
+function setupInstall() {
+  const isStandalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  if (isStandalone) markInstalled();
+
+  // يلتقط المتصفح هذا الحدث عندما يكون التطبيق جاهزاً للتثبيت بضغطة واحدة
+  addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+  });
+
+  // عند نجاح التثبيت نحدّث شكل الزر ونعرض إشعاراً لطيفاً
+  addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    markInstalled();
+    $("installHint").classList.add("hidden");
+    toast("تم تثبيت تطبيق روضة بنجاح ✓");
+  });
+
+  // ربط كل أزرار التثبيت في الصفحة الرئيسية
+  document.querySelectorAll("[data-install]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (isStandalone || btn.classList.contains("installed")) {
+        return toast("التطبيق مثبّت بالفعل على جهازك ✓");
+      }
+
+      // 1) إذا كانت نافذة التثبيت التلقائية متاحة (أندرويد كروم / إيدج / كمبيوتر)
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice.outcome === "accepted") deferredInstallPrompt = null;
+        return;
+      }
+
+      // 2) إذا كان المستخدم على آيفون أو متصفح آخر: نعرض له خطوة التثبيت الواضحة
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const hint = $("installHint");
+      hint.textContent = isIOS
+        ? "لتثبيت روضة على الآيفون: افتح الموقع في Safari، اضغط زر المشاركة (Share) بالأسفل ثم اختر «إضافة إلى الشاشة الرئيسية»."
+        : location.protocol === "file:"
+          ? "للتثبيت كتطبيق على الموبايل، افتح رابط الموقع المنشور (GitHub Pages أو Vercel) من متصفح Chrome واضغط هذا الزر."
+          : "اضغط قائمة المتصفح (⋮) في الأعلى ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
+      hint.classList.remove("hidden");
+      hint.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+}
+
+/* ================= 12) نقطة البداية (تشغيل التطبيق) ================= */
 
 function init() {
+  // استعادة الوضع الليلي المحفوظ (أو اتباع إعدادات الجهاز)
   const savedTheme = load("rawda-theme", null);
   setTheme(savedTheme ? savedTheme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
+
+  // فتح أذكار المساء تلقائياً بعد الساعة ٣ عصراً
   setAdhkarType(new Date().getHours() >= 15 ? "evening" : "morning");
 
+  // بناء الواجهات الأولية وتفعيل PWA والتنقل بين الصفحات
   renderHero();
   fillSelects();
   renderLastRead();
@@ -823,18 +962,20 @@ function init() {
   renderFavorites();
   updateTasbih();
   renderNames();
+  registerPWA();
+  setupInstall();
   showPage();
 
-  // التنقل بين الصفحات بالهاش (يدعم أزرار الرجوع والتقديم في المتصفح)
+  // الاستماع لتغيير الرابط (يدعم أزرار الرجوع والتقديم في المتصفح)
   addEventListener("hashchange", () => showPage());
 
-  // الهيدر والصفحة
+  // أحداث الهيدر والصفحة
   $("themeBtn").addEventListener("click", () => setTheme(!document.body.classList.contains("dark")));
   document.querySelectorAll(".copy-link").forEach((b) => b.addEventListener("click", () => copyDaily(b.dataset.copy)));
   $("toTop").addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
   addEventListener("scroll", onScroll, { passive: true });
 
-  // القرآن والمفضلة والوصول السريع
+  // أحداث صفحة القرآن والمفضلة
   $("searchInput").addEventListener("input", filterSurahs);
   document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => setSurahFilter(c.dataset.filter)));
   $("quickSurahs").addEventListener("click", (e) => { const b = e.target.closest("[data-num]"); if (b) openSurah(Number(b.dataset.num)); });
@@ -842,7 +983,7 @@ function init() {
   $("surahGrid").addEventListener("click", handleGridClick);
   $("favGrid").addEventListener("click", handleGridClick);
 
-  // نافذة المصحف والتلاوة
+  // أحداث قارئ المصحف ومشغّل التلاوة
   $("modalClose").addEventListener("click", closeModal);
   $("modalFavBtn").addEventListener("click", () => { if (currentSurah) toggleFavorite(currentSurah.number); });
   $("modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
@@ -869,7 +1010,7 @@ function init() {
   audio.addEventListener("pause", updatePlayBtn);
   audio.addEventListener("error", () => { if (playingIndex !== null) { toast("تعذّر تشغيل التلاوة"); stopAudio(); } });
 
-  // المواقيت والأذكار والمسبحة والأسماء الحسنى
+  // أحداث المواقيت والأذكار والمسبحة والأسماء الحسنى
   $("citySelect").addEventListener("change", loadPrayerTimes);
   document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => setAdhkarType(b.dataset.type)));
   $("adhkarList").addEventListener("click", handleDhikrClick);
@@ -878,10 +1019,11 @@ function init() {
   $("namesSearch").addEventListener("input", renderNames);
   $("namesGrid").addEventListener("click", (e) => { const c = e.target.closest(".name-card"); if (c) c.classList.toggle("flipped"); });
 
-  // تحميل البيانات من الـ APIs
+  // جلب بيانات القرآن والمواقيت من الإنترنت وتحديث العدّاد كل ثانية
   loadSurahs();
   loadPrayerTimes();
   setInterval(updateCountdown, 1000);
 }
 
+// تشغيل دالة init تلقائياً فور اكتمال تحميل هيكل الصفحة
 document.addEventListener("DOMContentLoaded", init);
